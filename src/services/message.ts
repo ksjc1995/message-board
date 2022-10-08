@@ -3,13 +3,13 @@ import { Message } from "../App";
 
 export const getMessages = async () => {
   const client = getApiClient();
-  const res = await client.get("messages");
+  const res = await client.get("messages/");
   return res;
 };
 
-export const postMessage = async (message: Message) => {
+export const postMessage = async (text: string) => {
   const client = getApiClient();
-  const res = await client.post("messages", message);
+  const res = await client.post("messages/", { text });
   return res;
 };
 

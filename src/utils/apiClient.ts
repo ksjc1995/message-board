@@ -4,7 +4,10 @@ let apiClient: ApisauceInstance;
 
 const config: ApisauceConfig = {
   baseURL: process.env.REACT_APP_API_BASE_URL,
-  headers: { Authorization: process.env.REACT_APP_API_TOKEN },
+  headers: {
+    Authorization: process.env.REACT_APP_API_TOKEN,
+    "Content-Type": "application/json",
+  },
 };
 
 export const getApiClient = (): ApisauceInstance => apiClient;
