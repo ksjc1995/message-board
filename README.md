@@ -16,4 +16,8 @@ REACT_APP_API_TOKEN = <INSERT-TOKEN-HERE>
 
 5. Run the app in development mode using `yarn start`. Open [http://localhost:3000](http://localhost:3000) to view in the browser.
 
+# Live Application
+
+[https://message-board-gilt.vercel.app/](https://message-board-gilt.vercel.app/)
+
 Note:- Yarn can be installed with npm using `npm i -g yarn`
