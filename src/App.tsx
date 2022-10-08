@@ -2,6 +2,18 @@ import { useEffect, useState } from "react";
 import PostMessage from "./components/PostMessage";
 import AllMessages from "./components/AllMessages";
 import {
+  Button,
+  Row,
+  Col,
+  Alert,
+  Spin,
+  Typography,
+  message,
+  Space,
+  Popconfirm,
+  Empty,
+} from "antd";
+import {
   deleteAll,
   deleteMessage,
   getMessages,
@@ -9,6 +21,8 @@ import {
 } from "./services/message";
 import { MessageInterface } from "./interfaces/message";
 import { cloneDeep } from "lodash";
+import { sortMessagesByDate } from "./utils";
+import { ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
 
 interface Error {
   code?: string;
@@ -16,20 +30,22 @@ interface Error {
 }
 
 const App = () => {
+  const { Title } = Typography;
   const [data, setData] = useState<Array<MessageInterface>>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+  const [sortOrder, setSortOrder] = useState("asc");
 
   const handlePostClick = async (text: string) => {
+    setError(null);
     try {
       const res: any = await postMessage(text);
       if (res.ok) {
         let newMessages = cloneDeep(data);
         newMessages.push(res.data);
-        console.log(res, newMessages);
         setData(newMessages);
+        message.success("Successfully created message!");
       } else {
-        console.log(res);
         setError({ code: res?.status, message: res?.data?.text[0] });
       }
       setLoading(false);
@@ -40,6 +56,7 @@ const App = () => {
   };
 
   const handleDeleteClick = async (id: string) => {
+    setError(null);
     try {
       const res: any = await deleteMessage(id);
       if (res.ok) {
@@ -48,9 +65,9 @@ const App = () => {
           (message: MessageInterface) => String(message.id) !== id
         );
         setData(updatedMessages);
+        message.success(`Successfully deleted message ${id}!`);
       } else {
-        console.log(res);
-        setError({ code: res?.status, message: res?.data?.text[0] });
+        setError({ code: res?.status, message: res?.problem });
       }
       setLoading(false);
     } catch (error: any) {
@@ -60,18 +77,22 @@ const App = () => {
   };
 
   const handleDeleteAllClick = async () => {
-    try {
-      const res: any = await deleteAll(data);
-      console.log(res);
-      setLoading(false);
-      if (res) {
-        setData([]);
-      } else {
-        setError({ code: res?.status, message: res?.data?.detail });
+    if (data.length > 0) {
+      try {
+        const res: any = await deleteAll(data);
+        setLoading(false);
+        if (res) {
+          setData([]);
+          message.success(`Successfully deleted all message!`);
+        } else {
+          setError({ code: res?.status, message: res?.problem });
+        }
+      } catch (error: any) {
+        setLoading(false);
+        setError({ message: error?.message });
       }
-    } catch (error: any) {
-      setLoading(false);
-      setError({ message: error?.message });
+    } else {
+      message.info("Nothing to delete!");
     }
   };
 
@@ -82,7 +103,7 @@ const App = () => {
       if (res.ok) {
         setData(res.data);
       } else {
-        setError({ code: res?.status, message: res?.data?.detail });
+        setError({ code: res?.status, message: res?.problem });
       }
     } catch (error: any) {
       setLoading(false);
@@ -90,24 +111,68 @@ const App = () => {
     }
   };
 
+  const handleSortClick = () => {
+    if (sortOrder === "asc") {
+      setSortOrder("desc");
+    } else {
+      setSortOrder("asc");
+    }
+    setData(sortMessagesByDate(data, sortOrder));
+  };
+
   useEffect(() => {
     fetchMessages();
   }, []);
 
   const renderAllMessages = () => {
-    if (error) return <div>{error?.message}</div>;
-    if (loading) return <div>loading...</div>;
-    return <AllMessages onDelete={handleDeleteClick} messages={data} />;
+    return (
+      <>
+        {loading ? (
+          <div>
+            <Spin />
+          </div>
+        ) : Array.isArray(data) && data.length > 0 ? (
+          <AllMessages onDelete={handleDeleteClick} messages={data} />
+        ) : (
+          <Empty />
+        )}
+      </>
+    );
   };
 
   return (
-    <>
-      <h1>Chatter</h1>
-      <></>
-      <PostMessage onPostClick={handlePostClick} />{" "}
-      <button onClick={handleDeleteAllClick}>Delete All</button>
+    <div style={{ padding: "32px" }}>
+      {error ? <Alert closable message={error?.message} type="error" /> : ""}
+      <br />
+      <Title>Chatter</Title>
+      <Title level={4} type="secondary">
+        Type something in the box below, then hit "Enter" or click "Post"
+      </Title>
+      <br />
+      <Row gutter={12}>
+        <Col>
+          <PostMessage onPostClick={handlePostClick} />{" "}
+        </Col>
+        <Col>
+          <Popconfirm
+            title="Are you sure you want to delete all messages?"
+            onConfirm={handleDeleteAllClick}
+          >
+            <Button type="primary" danger>
+              Delete All
+            </Button>
+          </Popconfirm>
+        </Col>
+      </Row>
+      <br />
+      <Button onClick={handleSortClick}>
+        Sort by date <Space />{" "}
+        {sortOrder === "desc" ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+      </Button>
+      <br />
+      <br />
       {renderAllMessages()}
-    </>
+    </div>
   );
 };
 
