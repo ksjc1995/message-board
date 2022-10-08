@@ -1,92 +1,22 @@
 import { useEffect, useState } from "react";
+import PostMessage from "./components/PostMessage";
+import AllMessages from "./components/AllMessages";
 import {
   deleteAll,
   deleteMessage,
   getMessages,
   postMessage,
 } from "./services/message";
-import { messages } from "./utils/dummy";
+import { MessageInterface } from "./interfaces/message";
 import { cloneDeep } from "lodash";
-
-export interface Message {
-  id: Number;
-  text: string;
-  source: string;
-  timestamp: string;
-}
-
-interface MessageProps {
-  message: Message;
-  onDelete: (id: string) => void;
-}
-
-interface AllMessagesProps {
-  messages: Array<Message>;
-  onDelete: (id: string) => void;
-}
 
 interface Error {
   code?: string;
   message: string;
 }
 
-const AllMessages = ({ messages, onDelete }: AllMessagesProps) => {
-  return (
-    <div>
-      {messages.map((message: Message) => {
-        const key = "MSG-" + message.id;
-        return <Message onDelete={onDelete} key={key} message={message} />;
-      })}
-    </div>
-  );
-};
-
-const Message = ({ message, onDelete }: MessageProps) => {
-  return (
-    <div style={{ margin: "8px" }}>
-      <div>
-        <span>
-          <strong>~{message?.source}</strong>
-        </span>
-        <span> - </span>
-        <span>{message?.timestamp}</span>
-        <button onClick={() => onDelete(String(message.id))}>Delete</button>
-      </div>
-      <div>
-        <p>{message?.text}</p>
-      </div>
-    </div>
-  );
-};
-
-const PostMessage = ({
-  onPostClick,
-}: {
-  onPostClick: (text: string) => void;
-}) => {
-  const [text, setText] = useState<string>("");
-  return (
-    <span>
-      <input
-        value={text}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setText(e.target.value)
-        }
-      />
-      <button
-        onClick={() => {
-          setText("");
-          onPostClick(text);
-        }}
-      >
-        Post
-      </button>
-    </span>
-  );
-};
-
 const App = () => {
-  const [data, setData] = useState<Array<Message>>([]);
+  const [data, setData] = useState<Array<MessageInterface>>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -115,7 +45,7 @@ const App = () => {
       if (res.ok) {
         let messagesClone = cloneDeep(data);
         const updatedMessages = messagesClone.filter(
-          (message: Message) => String(message.id) !== id
+          (message: MessageInterface) => String(message.id) !== id
         );
         setData(updatedMessages);
       } else {
@@ -172,7 +102,8 @@ const App = () => {
 
   return (
     <>
-      Message Board
+      <h1>Chatter</h1>
+      <></>
       <PostMessage onPostClick={handlePostClick} />{" "}
       <button onClick={handleDeleteAllClick}>Delete All</button>
       {renderAllMessages()}

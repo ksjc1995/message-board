@@ -1,5 +1,5 @@
 import { getApiClient } from "../utils/apiClient";
-import { Message } from "../App";
+import { MessageInterface } from "../interfaces/message";
 
 export const getMessages = async () => {
   const client = getApiClient();
@@ -19,7 +19,7 @@ export const deleteMessage = async (id: string) => {
   return res;
 };
 
-export const deleteAll = async (messages: Array<Message>) => {
+export const deleteAll = async (messages: Array<MessageInterface>) => {
   let promises = messages.map(async (message, index) =>
     deleteMessage(String(message.id))
   );

@@ -4,6 +4,7 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { createApiClient } from "./utils/apiClient";
 import "./reset.css";
+import "antd/dist/antd.css";
 
 createApiClient();
 
