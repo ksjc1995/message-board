@@ -2,7 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import { createApiClient } from "./apiClient";
+import { createApiClient } from "./utils/apiClient";
+import "./reset.css";
 
 createApiClient();
 
