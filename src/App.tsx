@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { deleteMessage, getMessages, postMessage } from "./services/message";
+import {
+  deleteAll,
+  deleteMessage,
+  getMessages,
+  postMessage,
+} from "./services/message";
 import { messages } from "./utils/dummy";
 import { cloneDeep } from "lodash";
 
@@ -91,6 +96,7 @@ const App = () => {
       if (res.ok) {
         let newMessages = cloneDeep(data);
         newMessages.push(res.data);
+        console.log(res, newMessages);
         setData(newMessages);
       } else {
         console.log(res);
@@ -123,7 +129,21 @@ const App = () => {
     }
   };
 
-  const handleDeleteAllClick = () => {};
+  const handleDeleteAllClick = async () => {
+    try {
+      const res: any = await deleteAll(data);
+      console.log(res);
+      setLoading(false);
+      if (res) {
+        setData([]);
+      } else {
+        setError({ code: res?.status, message: res?.data?.detail });
+      }
+    } catch (error: any) {
+      setLoading(false);
+      setError({ message: error?.message });
+    }
+  };
 
   const fetchMessages = async () => {
     try {

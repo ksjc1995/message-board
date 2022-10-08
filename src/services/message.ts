@@ -18,3 +18,11 @@ export const deleteMessage = async (id: string) => {
   const res = await client.delete(`messages/${id}`);
   return res;
 };
+
+export const deleteAll = async (messages: Array<Message>) => {
+  let promises = messages.map(async (message, index) =>
+    deleteMessage(String(message.id))
+  );
+  const res = Promise.all(promises);
+  return res;
+};
