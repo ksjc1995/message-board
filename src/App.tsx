@@ -63,8 +63,8 @@ const App = () => {
   };
 
   const handleDeleteCheckedMessages = async () => {
-    setLoading(true);
     if (checkedMessages.length > 0) {
+      setLoading(true);
       let promises = checkedMessages.map((id: Number) => {
         return deleteMessage(String(id));
       });
