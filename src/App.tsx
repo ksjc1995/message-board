@@ -12,6 +12,7 @@ import {
   Space,
   Popconfirm,
   Empty,
+  Pagination,
 } from "antd";
 import {
   deleteAll,
@@ -35,6 +36,58 @@ const App = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [sortOrder, setSortOrder] = useState("asc");
+  const [checkedMessages, setCheckedMessages] = useState<Array<Number>>([]);
+  const [paginatedData, setPaginatedData] = useState<Array<MessageInterface>>(
+    []
+  );
+  const [pageSize, setPageSize] = useState<number>(3);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  useEffect(() => {
+    const paginatedData = data.slice(
+      currentPage * pageSize - pageSize,
+      currentPage * pageSize
+    );
+    setPaginatedData(paginatedData);
+  }, [currentPage, data]);
+
+  const handleCheckboxChange = (e: any, id: number) => {
+    const newCheckedMessages = [...checkedMessages];
+    newCheckedMessages.push(id);
+    setCheckedMessages(newCheckedMessages);
+  };
+
+  const handlePageChange = (pageNumber: any) => {
+    setCurrentPage(pageNumber);
+    // console.log(e);
+  };
+
+  const handleDeleteCheckedMessages = async () => {
+    setLoading(true);
+    if (checkedMessages.length > 0) {
+      let promises = checkedMessages.map((id: Number) => {
+        return deleteMessage(String(id));
+      });
+
+      try {
+        const res = await Promise.all(promises);
+
+        // remove deleted messages from data
+        const newData = data.filter((message: MessageInterface) => {
+          if (checkedMessages.includes(message?.id)) {
+            return false;
+          }
+          return true;
+        });
+        setData(newData);
+        setLoading(false);
+      } catch (e: any) {
+        setLoading(false);
+        setError({ message: e?.message });
+        console.log(error);
+      }
+    }
+  };
 
   const handlePostClick = async (text: string) => {
     setError(null);
@@ -102,6 +155,7 @@ const App = () => {
       setLoading(false);
       if (res.ok) {
         setData(res.data);
+        setPaginatedData(res.data.slice(0, pageSize));
       } else {
         setError({ code: res?.status, message: res?.problem });
       }
@@ -132,7 +186,11 @@ const App = () => {
             <Spin />
           </div>
         ) : Array.isArray(data) && data.length > 0 ? (
-          <AllMessages onDelete={handleDeleteClick} messages={data} />
+          <AllMessages
+            onDelete={handleDeleteClick}
+            handleCheckboxChange={handleCheckboxChange}
+            messages={paginatedData}
+          />
         ) : (
           <Empty />
         )}
@@ -169,9 +227,19 @@ const App = () => {
         Sort by date <Space />{" "}
         {sortOrder === "desc" ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
       </Button>
+      <Space />
+      <Button danger onClick={handleDeleteCheckedMessages}>
+        Delete selected
+      </Button>
       <br />
       <br />
       {renderAllMessages()}
+      <Pagination
+        onChange={handlePageChange}
+        defaultCurrent={1}
+        defaultPageSize={3}
+        total={data.length}
+      />
     </div>
   );
 };

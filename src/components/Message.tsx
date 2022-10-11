@@ -1,19 +1,21 @@
-import { Button, Space, Typography, Popconfirm } from "antd";
+import { Button, Space, Typography, Popconfirm, Checkbox } from "antd";
 import { MessageInterface } from "../interfaces/message";
 import { DateTime } from "luxon";
 
 interface MessageProps {
   message: MessageInterface;
   onDelete: (id: string) => void;
+  onCheckboxChange: any;
 }
 
-const Message = ({ message, onDelete }: MessageProps) => {
+const Message = ({ message, onDelete, onCheckboxChange }: MessageProps) => {
   const { Text } = Typography;
 
   const time = DateTime.fromISO(message?.timestamp).toFormat("HH:mm:ss a");
   return (
     <div style={{ margin: "8px" }}>
       <div>
+        <Checkbox onChange={(e) => onCheckboxChange(e, message?.id)} />
         <span>
           <strong>~{message?.source}</strong>
         </span>
